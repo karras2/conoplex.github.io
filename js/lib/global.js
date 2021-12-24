@@ -148,18 +148,8 @@ const global = {
       at: "private",
       untrusted: true
     },
-    //  { visible: 2, id: 'x',  type: '0unk', name: 'Localhost',              code: 'local-local',      at: 'localhost:8080', secure: -1 },
     {
       visible: 1,
-      id: "q",
-      type: "0unk",
-      name: "Official Private Server",
-      code: "z-virginia",
-      at: "arraz-template.glitch.me",
-      untrusted: true
-    },
-    {
-      visible: 0,
       id: "wa",
       type: "0unk",
       name: "Maze FFA",
@@ -169,7 +159,7 @@ const global = {
       prefer: true
     },
     {
-      visible: 0,
+      visible: 1,
       id: "va",
       type: "0unk",
       name: "Maze FFA",
@@ -179,7 +169,7 @@ const global = {
       prefer: true
     },
     {
-      visible: 0,
+      visible: 1,
       id: "ra",
       type: "0unk",
       name: "Maze FFA",

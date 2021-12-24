@@ -83,21 +83,13 @@
                   <tr>
                     <td><div><b data-key="KEY_LEVEL_UP">N</b><span> - </span>level up</div></td>
                     <td><div><b data-key="KEY_REVERSE_TANK">V</b><span> - </span>reverse tank</div></td>
-                    <td><div><b data-key="KEY_REVERSE_MOUSE">B</b><span> - </span>reverse mouse</div></td>
+                    <td><div><b data-key="KEY_PING">L</b><span> - </span>show latency</div></td>
                   </tr>
                   <tr>
                     <td><div><b data-key="KEY_SCREENSHOT">Q</b><span> - </span>screenshot</div></td>
                     <td><div><b data-key="KEY_UPGRADE_MAX">M</b><span> - </span>maximize stat</div></td>
-                    <td><div><b data-key="KEY_CLASS_TREE">T</b><span> - </span>show class tree</div></td>
-                  </tr>
-                  <tr>
                     <td><div><b data-key="KEY_RECORD">Z</b><span> - </span>record video</div></td>
-                    
-                    <td><div><b data-key="KEY_PING">L</b><span> - </span>show latency</div></td>
-                  </tr>
-                  
-                 
-                   
+                  </tr>                
                 </tbody>
               </table>
               <div class="optionsHeader">Options</div>
@@ -141,23 +133,25 @@
                   </div></td>
                   <td><div>
                     <label class="container"><input id="optShield" tabindex="-1" class="checkbox" type="checkbox"><span class="checkmark"></span>Separate Shield Bar</label>
+                    </div></td>
+                </tr><tr>
+                  <td><div>
+                    <label class="container"><input id="optFancy" tabindex="-1" class="checkbox" type="checkbox"><span class="checkmark"></span>Sharp Edges</label>
+                  </div></td>
+                  <td><div>
+                    <label class="container"><input id="optShield" tabindex="-1" class="checkbox" type="checkbox"><span class="checkmark"></span>Sharp Text</label>
+                    </div></td>
+                </tr><tr>
+                  <td><div>
+                    <label class="container"><input id="optFancy" tabindex="-1" class="checkbox" type="checkbox"><span class="checkmark"></span>Enable Shadows</label>
+                  </div></td>
+                  <td><div>
+                    <label class="container"><input id="optShield" tabindex="-1" class="checkbox" type="checkbox"><span class="checkmark"></span>Small Grid</label>
                   </div></td>
                 </tr><tr>
                 </tr>
               </table>
-              <div class="optionsHeader">More Links</div>
-              <center>
-                <a tabindex="-1" href="https://glitch.com/edit/#!/arraz-template?path=README.md">Private Server Template</a>
-                <br>
-                <a tabindex="-1" href="/custom-shape">Custom Shape Builder</a>
-                <br>
-                <a tabindex="-1" href="https://codepen.io/road-to-100k/full/MPyOeQ/">Road's Custom Theme Maker</a>
-                <br>
-                <a tabindex="-1" href="http://arras-proxy.surge.sh/">Proxy Server</a>
-                &nbsp;&nbsp;&nbsp;
-                <a tabindex="-1" href="https://arras-lb.glitch.me/donate">Donate via Stripe</a>
                <input type="text" class="conceal" tabindex="3" placeholder="Token not required. For Beta Testers only." id="playerKeyInput" maxlength="64" />  
-              </center>
             </div>
           </div>
           <div style="position: relative; bottom: -10px;">
@@ -165,15 +159,8 @@
           </div>
         </div>
         <div class="startMenuHolder shrinkable">
-          <div class="changelogSelector" id="changelogSelector">
-            <span data-type="updates" class="active" title="All major updates">Updates</span>
-            <span data-type="events" title="Major updates involving events or gamemodes">Events &amp; Gamemodes</span>
-            <span data-type="balances" title="Every balance update, major or minor">Balance</span>
-            <span data-type="changelog" title="Every single update">Changelog</span>
-            <iframe id="patchNotesIFrame" src="changelog.html" seamless='seamless' height="300" frameBorder="1">Patch notes go here!</iframe>
-            <!-- <iframe id="patchNotesIFrame" src="privateinfo.html" seamless='seamless' frameBorder="1">Patch notes go here!</iframe>--->
-          </div>
-          <div id="patchNotes" class="updates"></div>
+        <div class="startMenuHolder" allowtransparency="true">
+          <iframe id="patchNotesIFrame" src="changelog.html" seamless='seamless' frameBorder="0">Patch notes go here!</iframe>
         </div>
       </div>
     </div>
