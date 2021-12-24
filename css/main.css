@@ -69,6 +69,11 @@ h3 {
   border-color: #323232;
 }
 
+canvas {
+  image-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+}
+
 .serverSelector {
   margin: 2px;
   height: 85px;
