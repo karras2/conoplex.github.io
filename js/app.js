@@ -815,223 +815,66 @@ if (!global.server) {
 "><td>Linode</td><td>Europe</td><td>3 Team Maze Domination</td></tr>
     </tbody></table>*/
 
-let serverSelector = document.getElementById('serverSelector')
-let selectedServer
+let serverSelector = document.getElementById("serverSelector");
+let selectedServer;
+let plUpdater;
+
+async function getPlayerData(server, element, locInfo) {
+    let isSecure = (server.secure) || (location.protocol === "https:" ? 1 : -1);
+    let url = `${isSecure === 1 ? "https" : "http"}://${server.at}/status.json`;
+
+    let oof = setTimeout(() => {
+        server.name = (server.name) ? server.name : '?'; //  != ''
+        server.players = (server.players) ? server.players : '?/?'; // != '' || server.players
+        if (element && locInfo) element.textContent = `${server.name} | ${locInfo} | ${server.players}`;
+    }, 3000);
+
+
+    await util.pullJSON(url).then(res => {
+        clearTimeout(oof);
+        server.name = res.name;
+        server.gamemode = res.gamemode;
+        server.players = `${res.players}/${res.max_players}`;
+        if (element && locInfo) element.textContent = `${server.name} | ${locInfo} | ${server.players}`;
+    });
+};
+
 for (let server of global.servers) {
-    if ((server.visible == null || server.visible > privilege) && global.server !== server) continue
-    let [hostCode, regionCode] = server.code.split('-')
-    let tr = document.createElement('tr')
-    tr.appendChild(document.createElement('td')).textContent = global.codeTable[0][hostCode]
-    tr.appendChild(document.createElement('td')).textContent = global.codeTable[1][regionCode][0]
-    tr.appendChild(document.createElement('td')).textContent = server.name
-    if (server.featured)
-        tr.classList.add('featured')
-     if (server.testing)
-        tr.classList.add('testing')
+    if (!server.visible && global.server !== server) continue; // == null
+
+    let [hostCode, regionCode] = server.code.split("-"),
+        locInfo = `${global.codeTable[0][hostCode]} | ${global.codeTable[1][regionCode][0]}`,
+        tr = document.createElement("tr"),
+        td = document.createElement("td");
+    td.textContent = `Loading... | ${locInfo} | Loading...`;
+
+    //get player and gamemode info from server
+    getPlayerData(server, td, locInfo);
+
+    tr.appendChild(td);
+    if (server.featured) tr.classList.add("featured");
+    if (server.testing) tr.classList.add("testing");
     tr.onclick = () => {
-        selectedServer.classList.remove('selected')
-        selectedServer = tr
-        selectedServer.classList.add('selected')
-        global.server = server
-        localStorage.gameMode = server.id
-        location.hash = '#' + server.id + (global.partyLink ? global.partyLink.toString() : '')
-    }
-    serverSelector.appendChild(tr)
+        if (selectedServer) selectedServer.classList.remove("selected");
+        selectedServer = tr;
+        selectedServer.classList.add("selected");
+        global.server = server;
+        localStorage.gameMode = server.id;
+        location.hash = "#" + server.id;
+
+        //getMockups();
+        //plUpdater = setInterval(() => getPlayerData(global.server, tr.childNodes[0], locInfo), 5000);
+        //.childNodes.item("child")
+    };
+    serverSelector.appendChild(tr);
     if (global.server === server) {
-        selectedServer = tr
-        selectedServer.classList.add('selected')
+        selectedServer = tr;
+        selectedServer.classList.add("selected");
         setTimeout(() => {
-            serverSelector.parentNode.parentNode.scrollTop = tr.offsetTop - 30
-        })
+            serverSelector.parentNode.parentNode.scrollTop = tr.offsetTop - 30;
+        });
+        //getMockups();
     }
-}
-
-const POLL_ENDPOINT = 'http://ip-p.arras.io:2020/poll/'
-
-let frame = document.getElementById('patchNotes')
-let processSection = (section, notLast) => {
-  let title = section.shift()
-  if (!title) return
-  title = title.match(/^([A-Za-z ]+[A-Za-z])\s*\[([0-9\-]+)\]\s*(.+)?$/) || [title, title, null]
-  let type = title[1] ? {
-    'Update': 'update',
-    'Feature': 'update',
-    'Poll': 'poll',
-    'Event Poll': 'event-poll',
-    'Gamemode Poll': 'event-poll',
-    'Event': 'event',
-    'Gamemode': 'event',
-    'Balance Update': 'balance-update',
-    'Balance': 'balance',
-    'Patch': 'patch',
-  } [title[1]] : null
-  let sectionElement = document.createElement('div')
-  if (type)
-    sectionElement.classList.add(type)
-  let titleElement = document.createElement('b')
-  let titleSegments = [title[1]]
-  if (title[2]) titleSegments.push(new Date(title[2] + ' ').toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' }))
-  if (title[3]) titleSegments.push(title[3])
-  titleElement.innerHTML = titleSegments.join(' - ')
-  sectionElement.appendChild(titleElement)
-  if (type === 'poll' || type === 'event-poll') {
-    let [id, endStamp, isTable] = section.shift().split(',').map(r => r.trim())
-    isTable = isTable === 'true'
-    let hoursLeft = Math.ceil((new Date(endStamp.trim()) - Date.now()) / (1000 * 60 * 60))
-    titleElement.appendChild(document.createElement('br'))
-    let small = document.createElement('small')
-    small.appendChild(document.createTextNode(hoursLeft > 0 ?
-      'closing in ' + hoursLeft + ' hour' + (hoursLeft === 1 ? '' : 's') :
-      'closed'))
-    let viewAll = document.createElement('a')
-    viewAll.href = 'javascript:;'
-    viewAll.innerText = 'view all results'
-    if (isTable)
-      small.appendChild(viewAll)
-    titleElement.appendChild(small)
-    sectionElement.appendChild(document.createElement('br'))
-
-    let table = document.createElement('table')
-    table.className = isTable ? 'poll-table' : 'poll-list'
-    let tbody = document.createElement('tbody')
-
-    let getNextCheckbox = (() => {
-      let labels = []
-      let options = []
-
-      let promise = fetch(POLL_ENDPOINT + id + '/status').then(r => r.json()).then(data => {
-        if (!data.ok)
-          throw new Error('Poll does not exist!')
-        options = data.options
-      })
-      viewAll.onclick = () => {
-        viewAll.remove()
-        for (let label of labels) {
-          label.className = 'count'
-          label.innerHTML = parseInt(label.title, 10)
-          label.title = ''
-        }
-      }
-      let currentId = 0
-      return name => {
-        let makeName = votes => (name ? name + ' - ' : '') + votes + ' vote' + (votes === 1 ? '' : 's')
-        let optionId = currentId++
-        let label = document.createElement('label')
-        label.className = 'container'
-
-        let input = document.createElement('input')
-        input.tabIndex = -1
-        input.className = 'checkbox'
-        input.type = 'checkbox'
-        input.disabled = true
-
-        promise.then(() => {
-          let { voted, votes } = options[optionId] || { voted: false, votes: 0 }
-          input.checked = voted
-          input.disabled = hoursLeft <= 0
-          let real = votes - voted
-          input.onchange = () => {
-            fetch(POLL_ENDPOINT + id + '/set/' + optionId + '/' + input.checked)
-            let votes = real + (input.checked ? 1 : 0)
-            if (name)
-              text.nodeValue = makeName(votes)
-            else
-              label.title = makeName(votes)
-          }
-          if (name)
-            text.nodeValue = makeName(votes)
-          else
-            label.title = makeName(votes)
-        })
-
-        let text
-        if (name) {
-          text = document.createTextNode(name)
-          label.appendChild(text)
-        }
-        label.appendChild(input)
-        let span = document.createElement('span')
-        span.className = 'checkmark'
-        label.appendChild(span)
-        labels.push(label)
-        return label
-      }
-    })()
-
-    for (let row of section) {
-      let tr = document.createElement('tr')
-      if (isTable) {
-        for (let cell of row.split('|')) {
-          cell = cell.trim()
-          let td = document.createElement('td')
-          if (cell === 'X') {
-            td.appendChild(getNextCheckbox())
-          } else {
-            let colSpan = cell.match(/^:*/)[0].length
-            td.colSpan = colSpan + 1
-            td.innerHTML = cell.slice(colSpan)
-          }
-          tr.appendChild(td)
-        }
-      } else {
-        let td = document.createElement('td')
-        td.appendChild(getNextCheckbox(row))
-        tr.appendChild(td)
-      }
-      tbody.appendChild(tr)
-    }
-
-    table.appendChild(tbody)
-    sectionElement.appendChild(table)
-  } else {
-    let listElement = document.createElement('ul')
-    for (let line of section) {
-      let lineElement = document.createElement('li')
-      lineElement.innerHTML = line
-      listElement.appendChild(lineElement)
-    }
-    sectionElement.appendChild(listElement)
-  }
-  if (notLast) {
-    sectionElement.appendChild(document.createElement('hr'))
-  }
-  frame.appendChild(sectionElement)
-}
-let writeAll = all => {
-  let section = []
-  for (let line of all.split('\n')) {
-    if (line.length === 0)
-      continue
-    let header = line.charAt(0)
-    if (header === '#') {
-      processSection(section, true)
-      section = [line.slice(1).trim()]
-    } else if (header === '-') {
-      section.push(line.slice(1).trim())
-    } else {
-      section[section.length - 1] += ' ' + line.trim()
-    }
-  }
-  processSection(section, false)
-}
-fetch('changelog.md', { cache: 'no-cache' }).then(r => r.text()).then(writeAll)
-{
-  let changelogSelector = document.getElementById('changelogSelector')
-  let current = changelogSelector.firstElementChild
-  let patchNotes = document.getElementById('patchNotes')
-  for (let i = 0; i < changelogSelector.children.length; i++) {
-    let child = changelogSelector.children[i]
-    let newType = child.dataset.type
-    child.onclick = () => {
-      if (child === current) return
-      let currentType = current.dataset.type
-      current.classList.remove('active')
-      child.classList.add('active')
-      patchNotes.classList.remove(currentType)
-      patchNotes.classList.add(newType)
-      current = child
-    }
-  }
 }
 
 // Save forms
